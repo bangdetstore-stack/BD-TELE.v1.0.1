@@ -70,7 +70,14 @@ async function beliDenganSaldo(ctx, productId) {
         `💰 Saldo tersisa: ${formatHarga(newSaldo)}\n`;
 
     if (akunDetail) {
-        successText += `\n📦 *Detail Akun:*\n\`\`\`\n${akunDetail}\n\`\`\`\n\n_Jangan bagikan ke orang lain!_`;
+        successText += `\n📦 *Detail Akun:*\n\`\`\`\n${akunDetail}\n\`\`\`\n\n`;
+        if (p.cara_penggunaan && p.cara_penggunaan !== '-') {
+            successText += `📌 *Cara Penggunaan:*\n${p.cara_penggunaan}\n\n`;
+        }
+        if (p.snk && p.snk !== '-') {
+            successText += `📋 *S&K:*\n${p.snk}\n\n`;
+        }
+        successText += `_Jangan bagikan ke orang lain!_`;
     } else {
         successText += `\n📦 Admin akan segera mengirimkan detail akun.`;
     }
@@ -203,7 +210,14 @@ async function prosesOrderSetelahBayar(ctx, orderId) {
         `💵 Harga: ${formatHarga(pending.originalAmount)}\n`;
 
     if (akunDetail) {
-        successText += `\n📦 *Detail Akun:*\n\`\`\`\n${akunDetail}\n\`\`\`\n\n_Jangan bagikan ke orang lain!_`;
+        successText += `\n📦 *Detail Akun:*\n\`\`\`\n${akunDetail}\n\`\`\`\n\n`;
+        if (p.cara_penggunaan && p.cara_penggunaan !== '-') {
+            successText += `📌 *Cara Penggunaan:*\n${p.cara_penggunaan}\n\n`;
+        }
+        if (p.snk && p.snk !== '-') {
+            successText += `📋 *S&K:*\n${p.snk}\n\n`;
+        }
+        successText += `_Jangan bagikan ke orang lain!_`;
     } else {
         successText += `\n📦 Admin akan mengirimkan detail akun segera.`;
     }
@@ -214,11 +228,15 @@ async function prosesOrderSetelahBayar(ctx, orderId) {
         [Markup.button.callback('🏠 Menu Utama', 'menu_utama')]
     ]);
 
-    // Edit caption QR → sukses
+    // Hapus pesan QR lama jika kita punya akses ke ctx yang utuh (saat hapus payload)
+    if (ctx.callbackQuery) {
+        try { await ctx.deleteMessage(); } catch (e) { }
+    }
+
     try {
-        await ctx.editMessageCaption(successText, { parse_mode: 'Markdown', ...keyboard });
-    } catch (e) {
         await ctx.telegram.sendMessage(userId, successText, { parse_mode: 'Markdown', ...keyboard });
+    } catch (e) {
+        console.error('Gagal mengirim pesan sukses:', e);
     }
 
     if (ADMIN_ID) {

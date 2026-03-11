@@ -268,14 +268,15 @@ bot.action('menu_leaderboard', (ctx) => showLeaderboard(ctx));
 // ── Admin panel
 bot.action('adm_panel', (ctx) => showAdminPanel(ctx));
 bot.action('adm_produk', (ctx) => showAdminProduk(ctx, 0));
-bot.action('adm_stok', (ctx) => showAdminStok(ctx));
+bot.action('adm_stok', (ctx) => showAdminStok(ctx, 0));
 bot.action('adm_tambah_produk', (ctx) => startTambahProduk(ctx));
 bot.action('adm_order', (ctx) => showAdminOrder(ctx, 0));
 bot.action('adm_user', (ctx) => showAdminUser(ctx, 0));
 bot.action('adm_saldo', (ctx) => startTambahSaldo(ctx));
 bot.action('adm_broadcast', (ctx) => startBroadcast(ctx));
-// Paginasi produk, order & user admin
+// Paginasi produk, stok, order & user admin
 bot.action(/^adm_produk_page_(\d+)$/, (ctx) => showAdminProduk(ctx, parseInt(ctx.match[1])));
+bot.action(/^adm_stok_page_(\d+)$/, (ctx) => showAdminStok(ctx, parseInt(ctx.match[1])));
 bot.action(/^adm_order_page_(\d+)$/, (ctx) => showAdminOrder(ctx, parseInt(ctx.match[1])));
 bot.action(/^adm_user_page_(\d+)$/, (ctx) => showAdminUser(ctx, parseInt(ctx.match[1])));
 // Edit produk: adm_edit_<id>

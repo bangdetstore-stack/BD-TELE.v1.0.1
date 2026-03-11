@@ -217,21 +217,39 @@ async function hapusProduk(ctx, productId) {
 }
 
 // ── STOK AKUN ──────────────────────────────────────────
-async function showAdminStok(ctx) {
+async function showAdminStok(ctx, page = 0) {
     if (!isAdmin(ctx.from.id)) return;
-    const products = getProducts();
+    const allProducts = getProducts();
+    const totalPages = Math.max(1, Math.ceil(allProducts.length / PRODUK_PAGE_SIZE));
+    const safePage = Math.max(0, Math.min(page, totalPages - 1));
+    const products = allProducts.slice(safePage * PRODUK_PAGE_SIZE, (safePage + 1) * PRODUK_PAGE_SIZE);
 
-    let text = `🔑 *MANAJEMEN STOK AKUN*\n${'─'.repeat(28)}\n\n`;
+    let text = `🔑 *MANAJEMEN STOK AKUN*\nHalaman ${safePage + 1}/${totalPages} | Total: ${allProducts.length}\n${'─'.repeat(28)}\n\n`;
+    
+    const rows = [];
+    let currentRow = [];
+
     products.forEach((p, i) => {
+        const no = safePage * PRODUK_PAGE_SIZE + i + 1;
         const stok = db.getStock(p.id);
-        text += `${stok > 0 ? '✅' : '🔴'} *${i + 1}.* ${p.nama} — ${stok} slot\n`;
+        text += `${stok > 0 ? '✅' : '🔴'} *${no}.* ${p.nama} — ${stok} slot\n`;
+        
+        currentRow.push(Markup.button.callback(`${no}`, `adm_tambah_akun_${p.id}`));
+        if (currentRow.length === 5) {
+            rows.push(currentRow);
+            currentRow = [];
+        }
     });
-    text += `\nPilih produk untuk tambah akun:`;
 
-    const rows = products.map(p => {
-        const stok = db.getStock(p.id);
-        return [Markup.button.callback(`➕  ${p.nama.substring(0, 24)} (${stok})`, `adm_tambah_akun_${p.id}`)];
-    });
+    if (currentRow.length > 0) rows.push(currentRow);
+
+    text += `\n_Pilih nomor produk untuk tambah akun:_`;
+
+    const navRow = [];
+    if (safePage > 0) navRow.push(Markup.button.callback('◀️  Sebelumnya', `adm_stok_page_${safePage - 1}`));
+    if (safePage < totalPages - 1) navRow.push(Markup.button.callback('Selanjutnya  ▶️', `adm_stok_page_${safePage + 1}`));
+    if (navRow.length > 0) rows.push(navRow);
+
     rows.push([Markup.button.callback('◀️  Panel Admin', 'adm_panel')]);
 
     try { await ctx.editMessageText(text, { parse_mode: 'Markdown', ...Markup.inlineKeyboard(rows) }); }
