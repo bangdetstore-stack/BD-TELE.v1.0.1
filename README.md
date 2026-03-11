@@ -1,4 +1,4 @@
-# 🤖 Bot Telegram Auto Order — Diera Store
+# 🤖 Bot Telegram Auto Order — by BANGDET 
 
 Bot Telegram otomatis untuk penjualan produk digital atau aplikasi premium, terintegrasi penuh dengan **Pakasir** sebagai payment gateway (mendukung QRIS dan Virtual Account). Bot ini dilengkapi sistem manajemen produk, panel admin canggih, fitur deposit saldo, serta pengiriman otomatis akun/produk ke pembeli setelah pembayaran berhasil.
 
@@ -48,7 +48,7 @@ Ikuti langkah-langkah di bawah ini untuk menginstal dan menjalankan bot:
    PAKASIR_API_KEY="Isi_API_Key_Pakasir_Di_Sini"
    WEBHOOK_PORT=12345
    ADMIN_ID="Isi_Telegram_ID_Admin_Di_Sini"
-   STORE_NAME="Diera Store"
+   STORE_NAME="BangDet Store"
    ```
    *(Peringatan: Jaga kerahasiaan file `.env`. Jangan pernah membagikan atau mempublikasikan file ini ke publik/repository. Semua nilai asli rahasia tidak boleh ditulis secara hardcode).*
 
@@ -194,5 +194,5 @@ Contoh `products.json`:
 
 ---
 <p align="center">
-  <i>© Diera Store Auto Order Bot — All Rights Reserved</i>
+  <i>© BANGDET AUTO ORDER TELE — All Rights Reserved</i>
 </p>
