@@ -3,9 +3,13 @@ const db = require('../lib/db');
 const pakasir = require('../lib/pakasir');
 const { generateQRBuffer } = require('../lib/qris');
 const { generateOrderId, formatDate, escMd } = require('../lib/utils');
-const { getProducts, saveProducts, formatHarga } = require('./products');
-
 const ADMIN_ID = parseInt(process.env.ADMIN_ID);
+const TESTI_CHANNEL_ID = process.env.TESTI_CHANNEL_ID || '';
+const LOG_CHANNEL_ID = process.env.LOG_CHANNEL_ID || '';
+const STORE_NAME = process.env.STORE_NAME || 'Diera Store';
+
+// Simple Lock Mechanism to prevent race conditions during purchase
+const transactionLocks = new Set();
 
 // ── BELI DENGAN SALDO ──────────────────────────────────
 async function beliDenganSaldo(ctx, productId) {
@@ -24,12 +28,17 @@ async function beliDenganSaldo(ctx, productId) {
     if (user.saldo < p.harga) {
         const kurang = p.harga - user.saldo;
         await ctx.answerCbQuery('❌ Saldo tidak cukup!', { show_alert: true });
+        
+        const csUsername = process.env.CS_USERNAME ? process.env.CS_USERNAME.replace('@', '') : '';
+        const btnHubungiCS = csUsername ? [Markup.button.url('📞 Hubungi CS', `https://t.me/${csUsername}`)] : [];
+
         try {
             await ctx.editMessageText(
                 `❌ *Saldo Tidak Cukup*\n\n💵 Harga: ${formatHarga(p.harga)}\n💰 Saldo kamu: ${formatHarga(user.saldo)}\n📉 Kurang: ${formatHarga(kurang)}`,
                 {
                     parse_mode: 'Markdown', ...Markup.inlineKeyboard([
                         [Markup.button.callback('💰 Deposit Sekarang', 'menu_deposit')],
+                        btnHubungiCS,
                         [Markup.button.callback('◀️ Kembali', `produk_${p.id}`)]
                     ])
                 }
@@ -38,49 +47,74 @@ async function beliDenganSaldo(ctx, productId) {
             try { await ctx.deleteMessage(); } catch (_) { }
             await ctx.replyWithMarkdown(
                 `❌ *Saldo Tidak Cukup*\n\n💵 Harga: ${formatHarga(p.harga)}\n💰 Saldo: ${formatHarga(user.saldo)}\n📉 Kurang: ${formatHarga(kurang)}`,
-                Markup.inlineKeyboard([[Markup.button.callback('💰 Deposit', 'menu_deposit')]])
+                Markup.inlineKeyboard([
+                    [Markup.button.callback('💰 Deposit', 'menu_deposit')],
+                    btnHubungiCS
+                ])
             );
         }
         return;
     }
 
-    ctx.answerCbQuery('⏳ Memproses...');
+    // ── PREVENTION OF RACE CONDITION ──
+    const lockKey = `buy_${productId}`;
+    if (transactionLocks.has(lockKey)) {
+        return ctx.answerCbQuery('⏳ Sistem sedang memproses order lain untuk produk ini. Coba lagi dalam 3 detik.', { show_alert: true });
+    }
+    transactionLocks.add(lockKey);
 
+    ctx.answerCbQuery('⏳ Memproses...');
     const orderId = generateOrderId('ORD');
 
-    // Ambil akun dari database
-    const akunDetail = db.takeAccount(p.id, orderId);
-    const newSaldo = db.kurangiSaldo(userId, p.harga);
+    try {
+        // Ambil akun dari database
+        const akunDetail = db.takeAccount(p.id, orderId);
+        
+        // Double check stok di dalam lock (kasus jika stok sisa 1 dan lock baru terbuka)
+        if (!akunDetail && stok > 0 && db.getStock(p.id) <= 0) {
+            transactionLocks.delete(lockKey);
+            return ctx.reply('❌ Maaf, stok baru saja habis.');
+        }
 
-    db.createOrder({
-        orderId, userId, productId: p.id, productName: p.nama,
-        harga: p.harga, paymentMethod: 'saldo', status: 'completed',
-        detail: akunDetail
-    });
-    db.updateUser(userId, {
-        totalOrder: (user.totalOrder || 0) + 1,
-        totalSpend: (user.totalSpend || 0) + p.harga
-    });
+        const newSaldo = db.kurangiSaldo(userId, p.harga);
 
+        db.createOrder({
+            orderId, userId, productId: p.id, productName: p.nama,
+            harga: p.harga, paymentMethod: 'saldo', status: 'completed',
+            detail: akunDetail
+        });
+        db.updateUser(userId, {
+            totalOrder: (user.totalOrder || 0) + 1,
+            totalSpend: (user.totalSpend || 0) + p.harga
+        });
+
+    // Digital Receipt format
     let successText =
-        `✅ *ORDER BERHASIL!*\n\n` +
+        `==========================\n` +
+        `✅ TRANSAKSI BERHASIL ✅\n` +
+        `==========================\n\n` +
         `🆔 Order ID: \`${orderId}\`\n` +
-        `🏷️ Produk: *${p.nama}*\n` +
-        `💵 Harga: ${formatHarga(p.harga)}\n` +
-        `💰 Saldo tersisa: ${formatHarga(newSaldo)}\n`;
+        `🏷️ Produk  : *${p.nama}*\n` +
+        `💵 Harga   : ${formatHarga(p.harga)}\n` +
+        `💳 Metode  : Saldo\n` +
+        `--------------------------\n` +
+        `💰 Sisa Saldo: ${formatHarga(newSaldo)}\n\n`;
 
     if (akunDetail) {
-        successText += `\n📦 *Detail Akun:*\n\`\`\`\n${akunDetail}\n\`\`\`\n\n`;
-        if (p.cara_penggunaan && p.cara_penggunaan !== '-') {
-            successText += `📌 *Cara Penggunaan:*\n${p.cara_penggunaan}\n\n`;
-        }
-        if (p.snk && p.snk !== '-') {
-            successText += `📋 *S&K:*\n${p.snk}\n\n`;
-        }
-        successText += `_Jangan bagikan ke orang lain!_`;
+        successText += `📦 *Detail Akun:*\n\`\`\`\n${akunDetail}\n\`\`\`\n\n`;
+        // ... (cara penggunaan dan snk logic tetap, digabungkan dibawah)
     } else {
-        successText += `\n📦 Admin akan segera mengirimkan detail akun.`;
+        successText += `📦 Admin akan segera mengirimkan detail akun.\n\n`;
     }
+
+    if (akunDetail && p.cara_penggunaan && p.cara_penggunaan !== '-') {
+        successText += `📌 *Cara Penggunaan:*\n${p.cara_penggunaan}\n\n`;
+    }
+    if (akunDetail && p.snk && p.snk !== '-') {
+        successText += `📋 *S&K:*\n${p.snk}\n\n`;
+    }
+    
+    successText += `_Terima kasih telah berbelanja di ${escMd(STORE_NAME)}! 💛_`;
 
     const keyboard = Markup.inlineKeyboard([
         [Markup.button.callback('🛍️ Beli Lagi', 'menu_produk')],
@@ -95,14 +129,42 @@ async function beliDenganSaldo(ctx, productId) {
         await ctx.replyWithMarkdown(successText, keyboard);
     }
 
+
     // Notif admin
     if (ADMIN_ID) {
         try {
             await ctx.telegram.sendMessage(ADMIN_ID,
-                `🛒 *ORDER BARU*\n\n👤 ${ctx.from.first_name} (${userId})\n🏷️ ${p.nama}\n💵 ${formatHarga(p.harga)}\n💳 Saldo\n🆔 \`${orderId}\``,
+                `🛒 *ORDER BARU*\n\n👤 ${escMd(ctx.from.first_name)} (${userId})\n🏷️ ${p.nama}\n💵 ${formatHarga(p.harga)}\n💳 Saldo\n🆔 \`${orderId}\``,
                 { parse_mode: 'Markdown' }
             );
         } catch (e) { /* ignore */ }
+    }
+
+    // Broadcast ke Channel Testi Live
+    if (TESTI_CHANNEL_ID) {
+        try {
+            const userName = ctx.from.username ? `@${ctx.from.username}` : ctx.from.first_name;
+            const maskName = userName.slice(0, 3) + '***' + userName.slice(-1);
+            await ctx.telegram.sendMessage(TESTI_CHANNEL_ID,
+                `🎉 *Sukses Pembelian!*\n\n👤 Pembeli: ${escMd(maskName)}\n🛒 Produk: *${p.nama}*\n💳 Metode: Saldo`,
+                { parse_mode: 'Markdown' }
+            );
+        } catch (e) { console.error('Gagal broadcast testi:', e.message); }
+    }
+
+    // Logger Transaksi ke Channel Log
+    if (LOG_CHANNEL_ID) {
+        try {
+            const userName = ctx.from.username ? `@${ctx.from.username}` : '';
+            await ctx.telegram.sendMessage(LOG_CHANNEL_ID,
+                `🛒 *LOG TRANSAKSI SALDO*\n\n👤 User: *${escMd(ctx.from.first_name)}* ${escMd(userName)} (\`${userId}\`)\n🏷️ Produk: *${p.nama}*\n💵 Harga: ${formatHarga(p.harga)}\n🆔 OrderID: \`${orderId}\``,
+                { parse_mode: 'Markdown' }
+            );
+        } catch (e) { console.error('Gagal broadcast log:', e.message); }
+    }
+    
+    } finally {
+        transactionLocks.delete(lockKey);
     }
 }
 
@@ -119,24 +181,32 @@ async function beliViaQRIS(ctx, productId) {
 
     await ctx.answerCbQuery('⏳ Membuat QRIS...');
 
-    const orderId = generateOrderId('PAY');
-    const result = await pakasir.createTransaction(orderId, p.harga, 'qris');
-
-    if (!result.success) {
-        try {
-            await ctx.editMessageText(`❌ *Gagal membuat pembayaran:*\n${escMd(result.error)}`,
-                { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.callback('◀️ Kembali', `produk_${p.id}`)]]) }
-            );
-        } catch (e) { await ctx.replyWithMarkdown(`❌ Gagal: ${result.error}`); }
-        return;
+    // ── PREVENTION OF RACE CONDITION ──
+    const lockKey = `buy_${productId}`;
+    if (transactionLocks.has(lockKey)) {
+        return ctx.reply('⏳ Sistem sedang memproses order lain untuk produk ini. Coba lagi dalam beberapa detik.');
     }
+    transactionLocks.add(lockKey);
 
-    const data = result.data;
+    try {
+        const orderId = generateOrderId('PAY');
+        const result = await pakasir.createTransaction(orderId, p.harga, 'qris');
 
-    db.savePending(`pay_${orderId}`, {
-        type: 'order', orderId, userId, productId: p.id,
-        amount: data.total_payment, originalAmount: p.harga, expiredAt: data.expired_at
-    });
+        if (!result.success) {
+            try {
+                await ctx.editMessageText(`❌ *Gagal membuat pembayaran:*\n${escMd(result.error)}`,
+                    { parse_mode: 'Markdown', ...Markup.inlineKeyboard([[Markup.button.callback('◀️ Kembali', `produk_${p.id}`)]]) }
+                );
+            } catch (e) { await ctx.replyWithMarkdown(`❌ Gagal: ${result.error}`); }
+            return;
+        }
+
+        const data = result.data;
+
+        db.savePending(`pay_${orderId}`, {
+            type: 'order', orderId, userId, productId: p.id,
+            amount: data.total_payment, originalAmount: p.harga, expiredAt: data.expired_at
+        });
 
     const keyboard = Markup.inlineKeyboard([
         [Markup.button.callback('🔄 Cek Status Bayar', `cek_pay_${orderId}_${data.total_payment}`)],
@@ -157,12 +227,15 @@ async function beliViaQRIS(ctx, productId) {
     let qrBuffer;
     try { qrBuffer = await generateQRBuffer(data.payment_number); } catch (e) { qrBuffer = null; }
 
-    if (qrBuffer) {
-        await ctx.replyWithPhoto({ source: qrBuffer, filename: 'qris.png' },
-            { caption, parse_mode: 'Markdown', ...keyboard }
-        );
-    } else {
-        await ctx.replyWithMarkdown(`${caption}\n\n\`${data.payment_number}\``, keyboard);
+        if (qrBuffer) {
+            await ctx.replyWithPhoto({ source: qrBuffer, filename: 'qris.png' },
+                { caption, parse_mode: 'Markdown', ...keyboard }
+            );
+        } else {
+            await ctx.replyWithMarkdown(`${caption}\n\n\`${data.payment_number}\``, keyboard);
+        }
+    } finally {
+        transactionLocks.delete(lockKey);
     }
 }
 
@@ -204,23 +277,29 @@ async function prosesOrderSetelahBayar(ctx, orderId) {
     db.deletePending(`pay_${orderId}`);
 
     let successText =
-        `✅ *PEMBAYARAN BERHASIL!*\n\n` +
+        `==========================\n` +
+        `✅ TRANSAKSI BERHASIL ✅\n` +
+        `==========================\n\n` +
         `🆔 Order ID: \`${orderId}\`\n` +
-        `🏷️ Produk: *${p.nama}*\n` +
-        `💵 Harga: ${formatHarga(pending.originalAmount)}\n`;
+        `🏷️ Produk  : *${p.nama}*\n` +
+        `💵 Harga   : ${formatHarga(pending.originalAmount)}\n` +
+        `💳 Metode  : QRIS\n` +
+        `--------------------------\n\n`;
 
     if (akunDetail) {
-        successText += `\n📦 *Detail Akun:*\n\`\`\`\n${akunDetail}\n\`\`\`\n\n`;
-        if (p.cara_penggunaan && p.cara_penggunaan !== '-') {
-            successText += `📌 *Cara Penggunaan:*\n${p.cara_penggunaan}\n\n`;
-        }
-        if (p.snk && p.snk !== '-') {
-            successText += `📋 *S&K:*\n${p.snk}\n\n`;
-        }
-        successText += `_Jangan bagikan ke orang lain!_`;
+        successText += `📦 *Detail Akun:*\n\`\`\`\n${akunDetail}\n\`\`\`\n\n`;
     } else {
-        successText += `\n📦 Admin akan mengirimkan detail akun segera.`;
+        successText += `📦 Admin akan dikirimkan detail akun segera.\n\n`;
     }
+
+    if (akunDetail && p.cara_penggunaan && p.cara_penggunaan !== '-') {
+        successText += `📌 *Cara Penggunaan:*\n${p.cara_penggunaan}\n\n`;
+    }
+    if (akunDetail && p.snk && p.snk !== '-') {
+        successText += `📋 *S&K:*\n${p.snk}\n\n`;
+    }
+    
+    successText += `_Terima kasih telah berbelanja di ${escMd(STORE_NAME)}! 💛_`;
 
     const keyboard = Markup.inlineKeyboard([
         [Markup.button.callback('🛍️ Beli Lagi', 'menu_produk')],
@@ -239,6 +318,7 @@ async function prosesOrderSetelahBayar(ctx, orderId) {
         console.error('Gagal mengirim pesan sukses:', e);
     }
 
+    // Notif admin
     if (ADMIN_ID) {
         try {
             await ctx.telegram.sendMessage(ADMIN_ID,
@@ -246,6 +326,28 @@ async function prosesOrderSetelahBayar(ctx, orderId) {
                 { parse_mode: 'Markdown' }
             );
         } catch (e) { /* ignore */ }
+    }
+
+    // Broadcast ke Channel Testi Live
+    if (TESTI_CHANNEL_ID) {
+        try {
+            // Masking User ID as Name since we only have UserID for webhook callback ctx
+            const maskName = String(userId).slice(0, 3) + '***' + String(userId).slice(-2);
+            await ctx.telegram.sendMessage(TESTI_CHANNEL_ID,
+                `🎉 *Sukses Pembelian!*\n\n👤 Pembeli: ${escMd(maskName)}\n🛒 Produk: *${p.nama}*\n💳 Metode: QRIS`,
+                { parse_mode: 'Markdown' }
+            );
+        } catch (e) { console.error('Gagal broadcast testi:', e.message); }
+    }
+
+    // Logger Transaksi ke Channel Log
+    if (LOG_CHANNEL_ID) {
+        try {
+            await ctx.telegram.sendMessage(LOG_CHANNEL_ID,
+                `🛒 *LOG TRANSAKSI QRIS*\n\n👤 UserID: \`${userId}\`\n🏷️ Produk: *${p.nama}*\n💵 Harga: ${formatHarga(pending.originalAmount)}\n🆔 OrderID: \`${orderId}\``,
+                { parse_mode: 'Markdown' }
+            );
+        } catch (e) { console.error('Gagal broadcast log:', e.message); }
     }
 }
 

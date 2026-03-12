@@ -91,10 +91,40 @@ async function showInfo(ctx) {
         `🔒 *Garansi:* Sesuai masa berlaku produk\n\n` +
         `_Terima kasih telah berbelanja di ${escMd(STORE_NAME)}!_ 💛`;
 
+    const csUsername = process.env.CS_USERNAME ? process.env.CS_USERNAME.replace('@', '') : '';
+    const btnCS = csUsername ? [Markup.button.url('📞 Hubungi Admin', `https://t.me/${csUsername}`)] : [];
+
     await editOrReply(ctx, text, Markup.inlineKeyboard([
-        [Markup.button.callback('✨  Cara Order', 'menu_cara_order')],
+        [Markup.button.callback('✨  Cara Order', 'menu_cara_order'), Markup.button.callback('❓  FAQ', 'menu_faq')],
+        btnCS,
         [
             Markup.button.callback('🛍️  Lihat Produk', 'menu_produk'),
+            Markup.button.callback('🏠  Menu Utama', 'menu_utama')
+        ]
+    ]));
+    ctx.answerCbQuery?.();
+}
+
+// ── FAQ ────────────────────────────────────────────────
+async function showFaq(ctx) {
+    const text =
+        `❓ *PERTANYAAN UMUM (FAQ)*\n${'─'.repeat(28)}\n\n` +
+        `*1. Bagaimana cara membeli?*\n` +
+        `Pilih produk di menu belanja, bayar saldo/QRIS. Akun otomatis dikirim ke chat ini.\n\n` +
+        `*2. Apakah stok selalu tersedia?*\n` +
+        `Jika sisa stok tercantum 0, artinya habis. Silakan tunggu restock atau hubungi Admin.\n\n` +
+        `*3. Saya sudah bayar QRIS tapi belum sukses?*\n` +
+        `Sistem butuh waktu 5-30 detik merekam pembayaran. Jika lewat 5 menit belum masuk, tekan tombol Cek Status Bayar.\n\n` +
+        `*4. Saya butuh Garansi?*\n` +
+        `Garansi berlaku sesuai S&K yang ada di tiap produk. Hubungi CS untuk klaim garansi.`;
+
+    const csUsername = process.env.CS_USERNAME ? process.env.CS_USERNAME.replace('@', '') : '';
+    const btnCS = csUsername ? [Markup.button.url('📞 Hubungi CS', `https://t.me/${csUsername}`)] : [];
+
+    await editOrReply(ctx, text, Markup.inlineKeyboard([
+        btnCS,
+        [
+            Markup.button.callback('◀️  Kembali', 'menu_info'),
             Markup.button.callback('🏠  Menu Utama', 'menu_utama')
         ]
     ]));
@@ -128,4 +158,4 @@ async function showCaraOrder(ctx) {
     ctx.answerCbQuery?.();
 }
 
-module.exports = { showProfil, showRiwayat, showInfo, showCaraOrder };
+module.exports = { showProfil, showRiwayat, showInfo, showCaraOrder, showFaq };

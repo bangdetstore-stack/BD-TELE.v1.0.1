@@ -7,11 +7,22 @@ const { handleStart, mainMenuKeyboard } = require('./handlers/start');
 const { showProductList, showCategoryDetail, showProductsByStock, showProductDetail, showSnk, showStock } = require('./handlers/products');
 const { beliDenganSaldo, beliViaQRIS, cekStatusPayment, batalkanPayment, prosesOrderSetelahBayar } = require('./handlers/payment');
 const { showDepositMenu, showMetodeDeposit, prosesDeposit, cekStatusDeposit, batalkanDeposit, handleCustomNominal, prosesDepositSetelahBayar } = require('./handlers/deposit');
-const { showProfil, showRiwayat, showInfo, showCaraOrder } = require('./handlers/profile');
+const { showProfil, showRiwayat, showInfo, showCaraOrder, showFaq } = require('./handlers/profile');
 const { showAdminPanel, showAdminProduk, showEditMenu, startEditField, confirmHapusProduk, hapusProduk, showAdminStok, startTambahAkun, startTambahProduk, handleAdminInput, showAdminOrder, showAdminUser, startTambahSaldo, startBroadcast, kirimDetail, isAdmin } = require('./handlers/admin');
 const { showLeaderboard } = require('./handlers/leaderboard');
 const { escMd } = require('./lib/utils');
 const db = require('./lib/db');
+const chokidar = require('chokidar');
+
+// ── HOT RELOAD LOGGING MENGGUNAKAN CHOKIDAR ────────────
+const watcher = chokidar.watch(['./*.js', './handlers/*.js', './lib/*.js'], {
+    ignored: /(^|[\/\\])\../, // ignore dotfiles
+    persistent: true
+});
+
+watcher.on('change', (path) => {
+    console.log(`\n[🔄 UPDATE] File ${path} telah diubah. Restarting/Nodemon sedang memproses...`);
+});
 
 const fs = require('fs');
 const path = require('path');
@@ -118,9 +129,9 @@ bot.use(async (ctx, next) => {
     if (rateLimitMap.has(userId)) {
         const lastTime = rateLimitMap.get(userId);
         if (now - lastTime < RATE_LIMIT_MS) {
-            // Jika user spam tombol inline
+            // Jika user spam tombol inline, berikan alert tanpa error
             if (ctx.callbackQuery) {
-                return ctx.answerCbQuery('⚠️ Terlalu cepat! Sabar ya 1 detik.', { show_alert: true }).catch(() => { });
+                return ctx.answerCbQuery('⚠️ Jangan terlalu cepat klik tombol! Tunggu 1 detik ya.', { show_alert: true }).catch(() => { });
             }
             // Abaikan pesan teks beruntun
             return;
@@ -261,6 +272,7 @@ bot.action(/^riwayat_page_(\d+)$/, (ctx) => showRiwayat(ctx, parseInt(ctx.match[
 // ── Info & Cara Order
 bot.action('menu_info', (ctx) => showInfo(ctx));
 bot.action('menu_cara_order', (ctx) => showCaraOrder(ctx));
+bot.action('menu_faq', (ctx) => showFaq(ctx));
 
 // ── Leaderboard
 bot.action('menu_leaderboard', (ctx) => showLeaderboard(ctx));
@@ -315,7 +327,6 @@ bot.on('text', async (ctx) => {
 
         // Tampilkan pilihan metode untuk nominal custom
         const { Markup } = require('telegraf');
-        const { formatRupiah } = require('./lib/utils');
         const METODE_OPTIONS = [
             { label: '📱 QRIS', value: 'qris' },
             { label: '🏦 BRI VA', value: 'bri_va' },

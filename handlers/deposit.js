@@ -95,9 +95,15 @@ async function prosesDeposit(ctx, nominal, method) {
     const result = await pakasir.createTransaction(orderId, nom, method);
 
     if (!result.success) {
+        const csUsername = process.env.CS_USERNAME ? process.env.CS_USERNAME.replace('@', '') : '';
+        const btnHubungiCS = csUsername ? [Markup.button.url('📞 Hubungi CS', `https://t.me/${csUsername}`)] : [];
+
         await editOrReply(ctx,
-            `❌ *Gagal membuat transaksi*\n\n${result.error}`,
-            Markup.inlineKeyboard([[Markup.button.callback('◀️  Kembali', 'menu_deposit')]])
+            `❌ *Gagal membuat transaksi*\n\n${escMd(result.error)}`,
+            Markup.inlineKeyboard([
+                btnHubungiCS,
+                [Markup.button.callback('◀️  Kembali', 'menu_deposit')]
+            ])
         );
         return;
     }
