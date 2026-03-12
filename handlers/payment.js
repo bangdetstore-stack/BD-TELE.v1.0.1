@@ -242,7 +242,10 @@ async function beliViaQRIS(ctx, productId) {
 // ── CEK STATUS PEMBAYARAN ──────────────────────────────
 async function cekStatusPayment(ctx, orderId, amount) {
     const result = await pakasir.checkTransaction(orderId, parseInt(amount));
-    if (!result.success) return ctx.answerCbQuery('❌ Gagal cek status', { show_alert: true });
+    if (!result.success) {
+        console.error('Gagal cek status:', result.error);
+        return ctx.answerCbQuery(`❌ Gagal cek status: ${result.error}`, { show_alert: true });
+    }
 
     if (result.data?.status === 'completed') {
         await prosesOrderSetelahBayar(ctx, orderId);

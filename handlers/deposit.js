@@ -165,7 +165,10 @@ async function prosesDeposit(ctx, nominal, method) {
 // ── CEK DEPOSIT ────────────────────────────────────────
 async function cekStatusDeposit(ctx, orderId, amount) {
     const result = await pakasir.checkTransaction(orderId, parseInt(amount));
-    if (!result.success) return ctx.answerCbQuery('❌ Gagal cek status', { show_alert: true });
+    if (!result.success) {
+        console.error('Gagal cek status deposit:', result.error);
+        return ctx.answerCbQuery(`❌ Gagal cek status: ${result.error}`, { show_alert: true });
+    }
 
     if (result.data?.status === 'completed') {
         await prosesDepositSetelahBayar(ctx.telegram, orderId);
