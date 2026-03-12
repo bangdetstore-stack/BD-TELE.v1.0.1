@@ -1,5 +1,6 @@
 const { Markup } = require('telegraf');
 const db = require('../lib/db');
+const { escMd } = require('../lib/utils');
 
 const STORE_NAME = process.env.STORE_NAME || 'Diera Store';
 
@@ -21,7 +22,7 @@ async function handleStart(ctx) {
 
     const text =
         `${greet}\n\n` +
-        `Selamat datang di *${STORE_NAME}*\n` +
+        `Selamat datang di *${escMd(STORE_NAME)}*\n` +
         `${'─'.repeat(28)}\n` +
         `👤 Total User Bot: *${stats.totalUser.toLocaleString('id-ID')} Orang*\n` +
         `✅ Total Transaksi: *${stats.totalTransaksi.toLocaleString('id-ID')}x*\n\n` +

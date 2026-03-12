@@ -2,7 +2,7 @@ const { Markup } = require('telegraf');
 const db = require('../lib/db');
 const pakasir = require('../lib/pakasir');
 const { generateQRBuffer } = require('../lib/qris');
-const { generateOrderId, formatDate } = require('../lib/utils');
+const { generateOrderId, formatDate, escMd } = require('../lib/utils');
 const { formatHarga } = require('./products');
 
 const ADMIN_ID = parseInt(process.env.ADMIN_ID);
@@ -195,7 +195,7 @@ async function prosesDepositSetelahBayar(telegram, orderId) {
         `✅ *DEPOSIT BERHASIL!*\n${'─'.repeat(28)}\n\n` +
         `💵 Nominal: *${formatHarga(pending.amount)}*\n` +
         `💰 Saldo sekarang: *${formatHarga(saldoBaru)}*\n\n` +
-        `Terima kasih sudah top up di ${process.env.STORE_NAME || 'Diera Store'}! 💛`,
+        `Terima kasih sudah top up di ${escMd(process.env.STORE_NAME || 'Diera Store')}! 💛`,
         { parse_mode: 'Markdown' }
     );
 

@@ -1,6 +1,6 @@
 const { Markup } = require('telegraf');
 const db = require('../lib/db');
-const { formatDate, statusEmoji, methodName } = require('../lib/utils');
+const { formatDate, statusEmoji, methodName, escMd } = require('../lib/utils');
 const { formatHarga } = require('./products');
 
 const STORE_NAME = process.env.STORE_NAME || 'Diera Store';
@@ -83,13 +83,13 @@ async function showRiwayat(ctx, page = 0) {
 // ── INFO ───────────────────────────────────────────────
 async function showInfo(ctx) {
     const text =
-        `ℹ️ *INFORMASI ${STORE_NAME}*\n${'─'.repeat(28)}\n\n` +
-        `🏪 *Toko:* ${STORE_NAME}\n` +
+        `ℹ️ *INFORMASI ${escMd(STORE_NAME)}*\n${'─'.repeat(28)}\n\n` +
+        `🏪 *Toko:* ${escMd(STORE_NAME)}\n` +
         `📦 *Produk:* Aplikasi & Software Premium\n` +
         `💳 *Pembayaran:* QRIS · Saldo · Transfer Bank\n` +
         `⚡ *Proses:* Otomatis / Max 5 menit\n` +
         `🔒 *Garansi:* Sesuai masa berlaku produk\n\n` +
-        `_Terima kasih telah berbelanja di ${STORE_NAME}!_ 💛`;
+        `_Terima kasih telah berbelanja di ${escMd(STORE_NAME)}!_ 💛`;
 
     await editOrReply(ctx, text, Markup.inlineKeyboard([
         [Markup.button.callback('✨  Cara Order', 'menu_cara_order')],

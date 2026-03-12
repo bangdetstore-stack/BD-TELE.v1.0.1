@@ -1,6 +1,6 @@
 const { Markup } = require('telegraf');
 const db = require('../lib/db');
-const { formatDate, statusEmoji } = require('../lib/utils');
+const { formatDate, statusEmoji, escMd } = require('../lib/utils');
 const { getProducts, saveProducts, formatHarga } = require('./products');
 
 const ADMIN_ID = parseInt(process.env.ADMIN_ID);
@@ -24,7 +24,7 @@ async function showAdminPanel(ctx) {
     const totalStok = products.reduce((sum, p) => sum + db.getStock(p.id), 0);
 
     const text =
-        `🛠️ *PANEL ADMIN*\n${STORE_NAME}\n${'─'.repeat(28)}\n\n` +
+        `🛠️ *PANEL ADMIN*\n${escMd(STORE_NAME)}\n${'─'.repeat(28)}\n\n` +
         `👥 User: *${users.length}*\n` +
         `🛒 Order: *${orders.length}* (✅ ${completedOrders} selesai)\n` +
         `📦 Produk: *${products.length}* | Stok: *${totalStok}* slot`;
@@ -426,7 +426,7 @@ async function handleAdminInput(ctx) {
         db.deletePending(`adm_${ctx.from.id}`);
         for (const user of users) {
             try {
-                await ctx.telegram.sendMessage(user.id, `📢 *Pesan dari ${STORE_NAME}:*\n\n${text}`, { parse_mode: 'Markdown' });
+                await ctx.telegram.sendMessage(user.id, `📢 *Pesan dari ${escMd(STORE_NAME)}:*\n\n${text}`, { parse_mode: 'Markdown' });
                 sukses++;
             } catch (e) { gagal++; }
             await new Promise(r => setTimeout(r, 60));
