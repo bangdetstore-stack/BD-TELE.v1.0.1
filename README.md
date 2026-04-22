@@ -184,6 +184,17 @@ Contoh `products.json`:
 }
 ```
 
+## 📏 Aturan Workspace & Pengembangan (Workspace Rules)
+
+Untuk menjaga kualitas dan keteraturan proyek ini, setiap pengembangan atau modifikasi **WAJIB** mengikuti aturan berikut:
+
+1. **Versioning Sistematis**: Proyek ini menggunakan _Semantic Versioning_ (contoh: `v1.0.1`). Setiap kali ada _update_ fitur, perbaikan bug, atau patch, pastikan untuk menaikkan versi pada file `package.json`.
+2. **Track Changelog**: Semua pembaruan yang dilakukan secara sistem, penambahan fitur, perbaikan, maupun fitur usang, harus selalu dicatat dalam file `CHANGELOG.md`. Hal ini memastikan transparansi *tracking* bagi semua pengembang.
+3. **Pembaruan Dokumentasi**: Jika ada fitur baru atau perubahan logika instalasi/penggunaan, dokumentasi utama pada `README.md` wajib diperbarui dan diselaraskan agar selalu relevan dengan versi terbaru di `CHANGELOG.md`.
+4. **Keamanan Kredensial**: Sangat dilarang keras melakukan _hardcode_ kunci API, Token, atau kredensial apa pun di dalam kode sumber (`.js`). Semua variabel rahasia wajib dipanggil menggunakan _environment variables_ `.env`.
+
+Dengan mematuhi prosedur kerja ini, jejak pembaruan akan selalu bersih dan termonitor dengan baik dari satu versi ke versi berikutnya.
+
 ---
 
 ## ⚠️ Keamanan, Privasi & Disclaimer
@@ -191,6 +202,12 @@ Contoh `products.json`:
 - **Isolasi Key:** Jangan pernah mengekspos rincian `BOT_TOKEN`, `PAKASIR_API_KEY`, folder isi `/data/`, file konfigurasi `.env`, atau log konsol ke forum publik (seperti komit riwayat Git / GitHub Publik).
 - **Pengamanan History:** Buat proteksi manual dan cadangkan (*Backup*) folder instalasi serta spesifik kepada subfolder `data/` sesering mungkin untuk menghindari disrupsi saat server terhenti.
 - Segala bentuk manipulasi data disarankan sewaktu posisi state Node js dimatikan demi menghindari *Race Condition* baca-tulis IO atau file terkunci dari background watcher bawaan.
+
+## 📝 Changelog
+
+Mulai dari versi v1.0.1, seluruh catatan perubahan (*Changelog*), histori fitur, dan *bug fixes* dari versi **v1.0.0 hingga versi terbaru** didokumentasikan secara lengkap dan terpisah.
+
+👉 **[Lihat CHANGELOG.md selengkapnya di sini](./docs/CHANGELOG.md)**
 
 ---
 <p align="center">
