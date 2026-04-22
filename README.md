@@ -208,7 +208,7 @@ Dengan mematuhi prosedur kerja ini, jejak pembaruan akan selalu bersih dan termo
 <<<<<<< HEAD
 Mulai dari versi v1.0.1, seluruh catatan perubahan (*Changelog*), histori fitur, dan *bug fixes* dari versi **v1.0.0 hingga versi terbaru** didokumentasikan secara lengkap dan terpisah.
 
-👉 **[Lihat CHANGELOG.md selengkapnya di sini](./docs/CHANGELOG.md)**
+👉 **[Lihat CHANGELOG.md selengkapnya di sini](./CHANGELOG.md)**
 =======
 Semua perubahan yang signifikan pada proyek ini akan didokumentasikan di file ini.
 
