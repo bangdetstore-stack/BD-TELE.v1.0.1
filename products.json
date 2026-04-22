@@ -1,0 +1,101 @@
+[
+  {
+    "id": 1,
+    "nama": "Netflix Premium UHD 1 Bulan",
+    "harga": 32000,
+    "kategori": "Streaming",
+    "deskripsi": "1P1U = 1 Profile saja untuk 1 User dan login 1 Device. max. 3 bulan durasi (hub Admin jika order lebih dari 1 bulan)",
+    "cara_penggunaan": "Masuk ke profil yang diberikan. Jangan ubah password atau email.",
+    "snk": "• Dilarang mengubah password/email\n• Jangan digunakan lebih dari 1 perangkat HD\n• Tidak ada refund jika akun bermasalah akibat kelalaian user\n• Garansi berlaku jika bermasalah bukan dari kelalaian user"
+  },
+  {
+    "id": 2,
+    "nama": "Netflix Private Basic",
+    "harga": 55000,
+    "kategori": "Streaming",
+    "deskripsi": "Plan Basic Single screen, full garansi, dapat Akses code, bisa jual sharing maksimal 2profile",
+    "cara_penggunaan": "Detail akun dikirim otomatis setelah pembelian.",
+    "snk": "- Full 30 Hari (bisa diperpanjang)\n- Max Login 2 Device \n- Akses mail silahkan hubungi admin @dierasandrastore\n- J⁠ika muncul 'upcoming price update' tolong diklik 'accept new price'\n- Dilarang mengubah email, pembayaran atau apapun yang merugikan Seller sebagai penyedia akun\n- Gunakan akun dengan bijak tanpa merugikan siapapun\n\nMelanggar Denda Rp.500,000.00"
+  },
+  {
+    "id": 3,
+    "nama": "Spotify Premium 1 Bulan",
+    "harga": 18000,
+    "kategori": "Musik",
+    "deskripsi": "Spotify Premium Individual 1 Bulan. Dengarkan musik tanpa iklan.",
+    "cara_penggunaan": "Login dengan akun yang diberikan. Nikmati musik bebas iklan.",
+    "snk": "• Dilarang mengubah password/email\n• 1 akun untuk 1 user\n• Tidak ada refund jika akun bermasalah akibat kelalaian user"
+  },
+  {
+    "id": 4,
+    "nama": "Disney+ Hotstar 1 Bulan",
+    "harga": 35000,
+    "kategori": "Streaming",
+    "deskripsi": "Disney+ Hotstar Premium 1 Bulan. Tonton film & serial Disney.",
+    "cara_penggunaan": "Login dengan akun yang diberikan. Jangan ubah password.",
+    "snk": "• Dilarang mengubah password/email\n• Maksimal 2 perangkat streaming\n• Tidak ada refund jika bermasalah akibat kelalaian user"
+  },
+  {
+    "id": 5,
+    "nama": "YouTube Premium 1 Bulan",
+    "harga": 25000,
+    "kategori": "Streaming",
+    "deskripsi": "YouTube Premium 1 Bulan. Nonton tanpa iklan + YouTube Music.",
+    "cara_penggunaan": "Login dengan akun yang diberikan. Jangan gunakan lebih dari 1 device.",
+    "snk": "• Dilarang mengubah password/email\n• Maksimal 1 perangkat\n• Tidak ada refund jika bermasalah akibat kelalaian user"
+  },
+  {
+    "id": 6,
+    "nama": "Canva Pro 1 Bulan",
+    "harga": 30000,
+    "kategori": "Desain",
+    "deskripsi": "Canva Pro 1 Bulan. Akses semua template & fitur premium.",
+    "cara_penggunaan": "Kamu akan diinvite ke tim. Jangan keluarkan/tinggalkan tim.",
+    "snk": "• Jangan keluar dari tim\n• Dilarang mengundang orang lain ke tim\n• Tidak ada refund jika bermasalah akibat kelalaian user"
+  },
+  {
+    "id": 7,
+    "nama": "CapCut Pro 1 Bulan",
+    "harga": 20000,
+    "kategori": "Edit Video",
+    "deskripsi": "CapCut Pro 1 Bulan. Edit video dengan fitur AI premium.",
+    "cara_penggunaan": "Login dengan akun yang diberikan.",
+    "snk": "• Dilarang mengubah password/email\n• 1 akun untuk 1 user\n• Tidak ada refund jika bermasalah akibat kelalaian user"
+  },
+  {
+    "id": 8,
+    "nama": "ChatGPT Plus 1 Bulan",
+    "harga": 150000,
+    "kategori": "AI",
+    "deskripsi": "ChatGPT Plus (GPT-4) 1 Bulan. Akses model AI terkuat.",
+    "cara_penggunaan": "Login dengan akun yang diberikan.",
+    "snk": "• Dilarang mengubah password/email\n• Jangan buat percakapan yang melanggar ToS OpenAI\n• 1 akun untuk 1 user\n• Tidak ada refund jika akun dibanned akibat kelalaian user"
+  },
+  {
+    "id": 9,
+    "nama": "Adobe Creative Cloud 1 Bulan",
+    "harga": 75000,
+    "kategori": "Desain",
+    "deskripsi": "Adobe CC 1 Bulan. Akses Photoshop, Illustrator, Premiere, dll.",
+    "cara_penggunaan": "Login dengan akun yang diberikan. Jangan ubah password.",
+    "snk": "• Dilarang mengubah password/email\n• Maksimal 2 perangkat aktif\n• Tidak ada refund jika bermasalah akibat kelalaian user"
+  },
+  {
+    "id": 10,
+    "nama": "Grammarly Premium 1 Bulan",
+    "harga": 35000,
+    "kategori": "Produktivitas",
+    "deskripsi": "Grammarly Premium 1 Bulan. AI writing assistant terbaik.",
+    "cara_penggunaan": "Login dengan akun yang diberikan.",
+    "snk": "• Dilarang mengubah password/email\n• 1 akun untuk 1 user\n• Tidak ada refund jika bermasalah akibat kelalaian user"
+  },
+  {
+    "id": 11,
+    "nama": "VPN Premium 1 Bulan",
+    "harga": 20000,
+    "kategori": "VPN",
+    "deskripsi": "VPN Premium 1 Bulan. Akses internet aman & bebas blokir.",
+    "cara_penggunaan": "Download aplikasi, login dengan akun yang diberikan.",
+    "snk": "• Dilarang menjual ulang akun\n• 1 akun untuk 1 user\n• Tidak ada refund jika bermasalah akibat kelalaian user"
+  }
+]

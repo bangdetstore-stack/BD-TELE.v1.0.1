@@ -1,0 +1,25 @@
+{
+  "name": "diera-store-telegram-bot",
+  "version": "1.0.0",
+  "description": "Bot Telegram Auto Order - BangDet-MD",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "serve": "node index.js"
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "chokidar": "^5.0.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "jszip": "^3.10.1",
+    "node-cron": "^3.0.3",
+    "qrcode": "^1.5.3",
+    "telegraf": "^4.16.3"
+  },
+  "devDependencies": {
+    "javascript-obfuscator": "^5.4.1",
+    "nodemon": "^3.1.4"
+  }
+}
